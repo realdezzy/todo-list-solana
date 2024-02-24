@@ -42,5 +42,33 @@ describe("todo-list-app", () => {
     assert.ok(taskAccount.updatedAt);
   });
 
+  it("Can mark a task as done", async () => {
+    const task = anchor.web3.Keypair.generate();
+    await program.methods.addingTask("You are awesome")
+    .accounts({
+      task: task.publicKey,
+      systemProgram: anchor.web3.SystemProgram.programId,
+    })
+    .signers([task])
+    .rpc();
 
+    let taskAccount = await program.account
+    .task.fetch(task.publicKey);
+
+    assert.ok(!taskAccount.isDone);
+
+    // Mark the task as done and test.
+    await program.methods.updatingTask(true)
+    .accounts({
+      task: task.publicKey,
+    })
+    .signers([])
+    .rpc();
+
+
+    taskAccount = await program.account
+    .task.fetch(task.publicKey);
+
+    assert.ok(taskAccount.isDone);
+  });
 });
